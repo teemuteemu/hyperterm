@@ -1,4 +1,16 @@
 
+0.5.0 / 2016-07-16
+==================
+
+  * plugins: improve error handling and introduce `getDecoratedConfig` [@rauchg]
+  * index: notify renderer of plugins changes to reload config [@rauchg]
+  * index: allow plugin authors to change electron window settings [@rauchg]
+  * index: expose `config` and `plugins` to plugin authors in electron process [@rauchg]
+  * app: preserve class names with uglification [@rauchg]
+  * config: reload config upon `plugins change` due to decorati [@rauchg]
+  * app: expose `plugins` and `config` to window [@rauchg]
+  * allow plugin authors to override styles by ditching !important [@rauchg]
+
 0.4.5 / 2016-07-14
 ==================
 
@@ -70,7 +82,7 @@
 
   * Implement hterm (#28) [@rauchg]
   * Fix "Download" link being clickable when hidden (#7) [@rauchg]
-  * Jump to begining of end at edges of tabs when moving sideways (#22) [@rauchg]
+  * Jump to beginning of end at edges of tabs when moving sideways (#22) [@rauchg]
   * Make clear where to run `npm start` (#19) [@montogeek]
   * Add fullscreen menu item (#1) [@rauchg, @montogeek]
   * Improve README and scripts (#15) [@leo]

@@ -13,6 +13,10 @@ const config = require('./config');
 config.init();
 const plugins = require('./plugins');
 
+// expose to plugins
+app.config = config;
+app.plugins = plugins;
+
 if (isDev) {
   console.log('running in dev mode');
 } else {
@@ -40,15 +44,17 @@ let winCount = 0;
 
 app.on('ready', () => {
   function createWindow (fn) {
-    let win = new BrowserWindow({
+    const cfg = plugins.getDecoratedConfig();
+    const win = new BrowserWindow({
       width: 540,
       height: 380,
       minHeight: 190,
       minWidth: 370,
       titleBarStyle: 'hidden-inset',
       title: 'HyperTerm',
-      backgroundColor: toHex(config.getConfig().backgroundColor || '#000'),
+      backgroundColor: toHex(cfg.backgroundColor || '#000'),
       transparent: true,
+      icon: resolve(__dirname, 'static/icon.png'),
       // we only want to show when the prompt
       // is ready for user input
       show: process.env.HYPERTERM_DEBUG || isDev
@@ -75,12 +81,13 @@ app.on('ready', () => {
       }
     });
 
-    rpc.on('new', ({ rows = 40, cols = 100 }) => {
-      initSession({ rows, cols }, (uid, session) => {
+    rpc.on('new', ({ rows = 40, cols = 100, cwd = process.env.HOME }) => {
+      initSession({ rows, cols, cwd }, (uid, session) => {
         sessions.set(uid, session);
         rpc.emit('session add', {
           uid,
-          shell: session.shell
+          shell: session.shell,
+          pid: session.pty.pid
         });
 
         session.on('data', (data) => {
@@ -176,6 +183,7 @@ app.on('ready', () => {
     const pluginsUnsubscribe = plugins.subscribe((err) => {
       if (!err) {
         load();
+        win.webContents.send('plugins change');
       }
     });
 

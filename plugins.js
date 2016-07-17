@@ -93,7 +93,7 @@ function updatePlugins ({ force = false } = {}) {
         if (changed) {
           notify(
             'Plugins Updated',
-            'Restart the app or hot-reload with "Plugins" > "Reload Now" to enjoy the updates!'
+            'Restart the app or hot-reload with "View" > "Reload" to enjoy the updates!'
           );
         } else {
           notify(
@@ -233,7 +233,7 @@ function requirePlugins () {
       mod = require(path);
 
       if (!mod || (!mod.onApp && !mod.onWindow && !mod.onUnload &&
-        !mod.middleware &&
+        !mod.middleware && !mod.reduceUI && !mod.reduceSessions &&
         !mod.decorateConfig && !mod.decorateMenu &&
         !mod.decorateTerm && !mod.decorateHyperTerm &&
         !mod.decorateTab && !mod.decorateNotification &&
@@ -243,6 +243,10 @@ function requirePlugins () {
           'HyperTerm extension API methods');
         return;
       }
+
+      // populate the name for internal errors here
+      mod._name = basename(path);
+
       return mod;
     } catch (err) {
       notify('Plugin error!', `Plugin "${basename(path)}" failed to load (${err.message})`);
@@ -262,10 +266,10 @@ exports.onApp = function (app) {
   });
 };
 
-exports.onWindow = function (win, app) {
+exports.onWindow = function (win) {
   modules.forEach((plugin) => {
     if (plugin.onWindow) {
-      plugin.onWindow(app);
+      plugin.onWindow(win);
     }
   });
 };
@@ -285,15 +289,15 @@ exports.decorateMenu = function (tpl) {
   return decorated;
 };
 
-exports.decorateConfig = function (config) {
-  let decorated = config;
+exports.getDecoratedConfig = function () {
+  let decorated = config.getConfig();
   modules.forEach((plugin) => {
     if (plugin.decorateConfig) {
       const res = plugin.decorateConfig(decorated);
-      if (res) {
+      if (res && 'object' === typeof res) {
         decorated = res;
       } else {
-        console.error('incompatible response type for `decorateConfig`');
+        notify('Plugin error!', `"${plugin._name}": invalid return type for \`decorateConfig\``);
       }
     }
   });
